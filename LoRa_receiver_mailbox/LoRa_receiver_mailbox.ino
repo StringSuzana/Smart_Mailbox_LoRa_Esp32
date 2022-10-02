@@ -1,12 +1,11 @@
-#include <iostream>
-#include <string>
+#include <Arduino.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <UniversalTelegramBot.h>
 #include <SPI.h>
 #include <LoRa.h>
 #include "Properties.h"
-using namespace std;
+
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOT_TOKEN, secured_client);
 
@@ -25,7 +24,6 @@ void sendMessageToTelegram(String message) {
   if (from_name == "")
     from_name = "Guest";
 
-  bot.sendMessage(CHAT_ID, "Mailbox door status from ESP32 over LoRa:");
   bot.sendMessage(CHAT_ID, message);
 }
 void loRaSetup() {
@@ -35,7 +33,7 @@ void loRaSetup() {
     Serial.println(".");
     delay(500);
   }
-  LoRa.setSyncWord(0xF3);
+  LoRa.setSyncWord(0x30);
   Serial.println("LoRa Initializing OK!");
 }
 
@@ -76,6 +74,7 @@ void setup() {
 
 void loop() {
   // try to parse packet
+
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
@@ -98,7 +97,7 @@ void loop() {
     Serial.print(" with SNR ");
     Serial.println(LoRa.packetSnr());
 
-    Serial.print(" with SNR ");
+    Serial.print(" with packet frequency error ");
     Serial.println(LoRa.packetFrequencyError());
   }
 }

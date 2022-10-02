@@ -1,5 +1,7 @@
 #include <SPI.h>
 #include <LoRa.h>
+#include <Arduino.h>
+#include "stdio.h"
 
 const int counter = 0;
 const int NSS_PIN = 5;
@@ -32,7 +34,7 @@ void loRaSetup() {
     Serial.println(".");
     delay(500);
   }
-  LoRa.setSyncWord(0xF3);
+  LoRa.setSyncWord(0x30);
   Serial.println("LoRa Initializing OK!");
 }
 void sendMessageToLoRa(String message) {
@@ -61,7 +63,7 @@ void setup() {
   Serial.println();
 
   loRaSetup();
-
+  
   print_wakeup_reason();
   notifyLoRa();
   /*
