@@ -9,11 +9,14 @@
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOT_TOKEN, secured_client);
 
-const int counter = 0;
 const int NSS_PIN = 5;
 const int RESET_PIN = 4;
 const int IO0_PIN = 2;
 
+void sendMessageToTelegram(String message);
+void loRaSetup();
+void wifiSetup();
+void timeSetup();
 
 void sendMessageToTelegram(String message) {
   Serial.println("sendMessageToTelegram");
@@ -28,16 +31,19 @@ void sendMessageToTelegram(String message) {
 }
 void loRaSetup() {
   Serial.println("============ LoRa Receiver ============");
+
   LoRa.setPins(NSS_PIN, RESET_PIN, IO0_PIN);
-  while (!LoRa.begin(868E6)) {
+  while (!LoRa.begin(868E6)) { //868 MHz is frequency for LoRa communication in Europe
     Serial.println(".");
     delay(500);
   }
-  LoRa.setSyncWord(0x30);
+  LoRa.setSyncWord(0x30); //Sync word (Must be same as in senders Sync word)
+
   Serial.println("LoRa Initializing OK!");
 }
 
-void wifiSetup() {
+void wifiSetup() 
+{
   Serial.print("Connecting to Wifi SSID ");
   Serial.print(WIFI_SSID);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
@@ -52,7 +58,7 @@ void wifiSetup() {
 void timeSetup() {
 
   Serial.print("Retrieving time: ");
-  configTime(0, 0, "pool.ntp.org");  // get UTC time via NTP
+  configTime(0, 0, "pool.ntp.org");  // get UTC time via NTP (Network Time Protocol)
   time_t now = time(nullptr);
   while (now < 24 * 3600) {
     Serial.print(".");
@@ -73,8 +79,8 @@ void setup() {
 }
 
 void loop() {
-  // try to parse packet
 
+  // try to parse packet
   int packetSize = LoRa.parsePacket();
   if (packetSize) {
     // received a packet
@@ -85,16 +91,16 @@ void loop() {
       char letter = (char)LoRa.read();
       status.concat(letter);
     }
-    status.concat(" with RSSI ");
+    status.concat(" with RSSI "); //Received Signal Strength Indicator
     status.concat(String(LoRa.packetRssi()));
 
     sendMessageToTelegram(status);
 
-    // print RSSI of packet
+    // print to Serial Monitor: RSSI, SNR, and packet frequency error of packet
     Serial.print("' with RSSI ");
     Serial.print(LoRa.packetRssi());
 
-    Serial.print(" with SNR ");
+    Serial.print(" with SNR "); //Signal-to-noise ratio [dB] (>0 dB => more signal than noise)
     Serial.println(LoRa.packetSnr());
 
     Serial.print(" with packet frequency error ");
